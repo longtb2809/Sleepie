@@ -36,11 +36,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // Configure CORS
+var corsOrigins = builder.Configuration["Cors:Origins"]?.Split(",", StringSplitOptions.RemoveEmptyEntries)
+    ?? ["http://localhost:5173", "https://sleepieherbal.com"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173","https://sleepieherbal.com")
+        policy.WithOrigins(corsOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
