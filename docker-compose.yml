@@ -3,6 +3,9 @@ services:
     build:
       context: ./sleepie-landing-page
       dockerfile: Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+        VITE_API_URL: ${VITE_API_URL:-https://api.sleepieherbal.com}
     depends_on:
       - backend
     restart: unless-stopped
@@ -40,7 +43,7 @@ services:
       - coolify
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=(Host(`sleepieherbal.com`) && PathPrefix(`/api`))"
+      - "traefik.http.routers.backend.rule=Host(`api.sleepieherbal.com`)"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"

@@ -54,18 +54,22 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Auto-migrate database on startup
+using (var scope = app.Services.CreateScope())
 {
-    app.MapOpenApi();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
+
+if (app.Environment.IsDevelopment())
+    app.MapOpenApi();
 
 if (!app.Environment.IsProduction())
     app.UseHttpsRedirection();
 
-app.UseStaticFiles();
-
 app.UseCors("AllowFrontend");
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
