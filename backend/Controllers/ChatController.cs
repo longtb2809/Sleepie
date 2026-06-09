@@ -109,7 +109,7 @@ Luôn hoàn thành câu trả lời trọn vẹn — KHÔNG dừng giữa chừn
             });
 
             // 4. Call Gemini API
-            var apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key={apiKey}";
+            var apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
 
             var geminiRequest = new
             {
