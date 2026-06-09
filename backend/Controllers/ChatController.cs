@@ -32,7 +32,7 @@ namespace Sleepie.Backend.Controllers
 
             var apiKey = _configuration["GeminiApiKey"]
                 ?? Environment.GetEnvironmentVariable("GEMINI_API_KEY");
-            if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "AIzaSyAXdvcLG_CvDOj_wZy6HrCmFPDIC2bjuQU")
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
                 return StatusCode(500, "Chưa cấu hình Gemini API Key. Thêm key vào appsettings.json (GeminiApiKey) hoặc biến môi trường GEMINI_API_KEY.");
             }
