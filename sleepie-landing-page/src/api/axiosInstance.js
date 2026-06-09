@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Tạo instance của axios với base URL là C# Backend
 const api = axios.create({
-  baseURL: '/api', // Gọi trực tiếp API trên cùng tên miền
+  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api',
   headers: {
     'Content-Type': 'application/json',
   },
