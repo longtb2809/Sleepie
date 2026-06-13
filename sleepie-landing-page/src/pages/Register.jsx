@@ -3,6 +3,23 @@ import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { AuthContext } from '../context/AuthContext';
 import { ArrowLeft } from 'lucide-react';
+import {
+  validateFullName,
+  validateEmail,
+  validatePhone,
+  validatePassword,
+  validateConfirmPassword,
+  validateRegisterForm,
+  normalizePhone,
+} from '../utils/validation';
+
+const FIELD_VALIDATORS = {
+  fullName: (value) => validateFullName(value),
+  email: (value) => validateEmail(value),
+  phone: (value) => validatePhone(value),
+  password: (value) => validatePassword(value),
+  confirmPassword: (value, form) => validateConfirmPassword(form.password, value),
+};
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -10,21 +27,66 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const formValues = { fullName, email, phone, password, confirmPassword };
+
+  const validateField = (field, value) => {
+    const validator = FIELD_VALIDATORS[field];
+    if (!validator) return '';
+    return validator(value, formValues);
+  };
+
+  const handleBlur = (field) => {
+    const value = formValues[field];
+    const message = validateField(field, value);
+    setErrors((prev) => ({ ...prev, [field]: message }));
+  };
+
+  const handleFieldChange = (field, value) => {
+    const setters = {
+      fullName: setFullName,
+      email: setEmail,
+      phone: setPhone,
+      password: setPassword,
+      confirmPassword: setConfirmPassword,
+    };
+    setters[field](value);
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }));
+    }
+
+    if (field === 'password' && errors.confirmPassword && confirmPassword) {
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword: validateConfirmPassword(value, confirmPassword),
+      }));
+    }
+  };
+
+  const inputClassName = (field) =>
+    `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all ${
+      errors[field] ? 'border-red-500' : 'border-gray-300'
+    }`;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      return setError('Mật khẩu xác nhận không khớp.');
+    const fieldErrors = validateRegisterForm(formValues);
+    setErrors(fieldErrors);
+
+    if (Object.values(fieldErrors).some(Boolean)) {
+      return;
     }
+
     setError('');
     setIsLoading(true);
     try {
-      await register(fullName, email, password);
-      // Nếu đăng ký thành công, tự động chuyển về trang login
+      await register(fullName.trim(), email.trim(), password, normalizePhone(phone));
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
@@ -71,57 +133,74 @@ export default function Register() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-text-dark mb-1">Họ và tên</label>
             <input
               type="text"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-              required
+              onChange={(e) => handleFieldChange('fullName', e.target.value)}
+              onBlur={() => handleBlur('fullName')}
+              className={inputClassName('fullName')}
             />
+            {errors.fullName && (
+              <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-text-dark mb-1">Email</label>
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-              required
+              onChange={(e) => handleFieldChange('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              className={inputClassName('email')}
             />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-text-dark mb-1">Số điện thoại</label>
             <input
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+              onChange={(e) => handleFieldChange('phone', e.target.value)}
+              onBlur={() => handleBlur('phone')}
+              className={inputClassName('phone')}
               placeholder="Ví dụ: 0901 234 567"
-              required
             />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-text-dark mb-1">Mật khẩu</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-              required
+              onChange={(e) => handleFieldChange('password', e.target.value)}
+              onBlur={() => handleBlur('password')}
+              className={inputClassName('password')}
             />
+            {errors.password ? (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            ) : (
+              <p className="mt-1 text-xs text-text-light">Ít nhất 8 ký tự, gồm chữ cái và số.</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-text-dark mb-1">Xác nhận mật khẩu</label>
             <input
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-              required
+              onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
+              onBlur={() => handleBlur('confirmPassword')}
+              className={inputClassName('confirmPassword')}
             />
+            {errors.confirmPassword && (
+              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+            )}
           </div>
           <button
             type="submit"
@@ -132,14 +211,12 @@ export default function Register() {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="flex items-center my-6">
           <div className="flex-1 border-t border-gray-300"></div>
           <span className="px-4 text-sm text-text-light">Hoặc</span>
           <div className="flex-1 border-t border-gray-300"></div>
         </div>
 
-        {/* Google Login Button */}
         <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}

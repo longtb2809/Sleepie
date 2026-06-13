@@ -28,6 +28,7 @@ namespace Sleepie.Backend.Controllers
             public string FullName { get; set; } = string.Empty;
             public string Email { get; set; } = string.Empty;
             public string Password { get; set; } = string.Empty;
+            public string? PhoneNumber { get; set; }
         }
 
         public class LoginDto
@@ -44,6 +45,21 @@ namespace Sleepie.Backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.FullName) || dto.FullName.Trim().Length < 2)
+            {
+                return BadRequest(new { message = "Họ và tên không hợp lệ." });
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains('@'))
+            {
+                return BadRequest(new { message = "Email không hợp lệ." });
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
+            {
+                return BadRequest(new { message = "Mật khẩu phải có ít nhất 8 ký tự." });
+            }
+
             if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
             {
                 return BadRequest(new { message = "Email đã tồn tại." });
@@ -65,8 +81,9 @@ namespace Sleepie.Backend.Controllers
 
             var user = new User
             {
-                FullName = dto.FullName,
-                Email = dto.Email,
+                FullName = dto.FullName.Trim(),
+                Email = dto.Email.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? null : dto.PhoneNumber.Trim(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 RoleId = userRole.Id
             };
