@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../api/axiosInstance';
+import { getImageUrl } from '../utils/image';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -76,7 +77,7 @@ export default function ProductDetail() {
                 {/* Main Image */}
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 group">
                   <img
-                    src={mainImage}
+                    src={getImageUrl(mainImage)}
                     alt={product.name}
                     className="w-full h-full object-cover transition-all duration-300"
                     onError={(e) => { e.target.src = "/assets/product_1.png"; }}
@@ -115,7 +116,7 @@ export default function ProductDetail() {
                         className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${mainImage === img ? 'border-primary' : 'border-transparent hover:border-primary-light'}`}
                       >
                         <img
-                          src={img}
+                          src={getImageUrl(img)}
                           alt={`Thumbnail ${idx + 1}`}
                           className="w-full h-full object-cover"
                           onError={(e) => { e.target.src = "/assets/product_1.png"; }}

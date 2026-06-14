@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axiosInstance';
+import { getImageUrl } from '../utils/image';
 import { LogOut, Plus, Edit2, Trash2, X, ImageIcon } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 
@@ -237,7 +238,7 @@ export default function AdminDashboard() {
                     {editingProduct && editingProduct.imageUrls && editingProduct.imageUrls.map((url, idx) => (
                       <div key={`old-${idx}`} className="relative group">
                         <img
-                          src={url}
+                          src={getImageUrl(url)}
                           alt={`img-${idx}`}
                           className="w-24 h-24 object-cover rounded-xl border border-gray-200"
                           onError={e => { e.target.style.display = 'none'; }}
@@ -368,7 +369,7 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4">
                         {imgSrc ? (
                           <img
-                            src={imgSrc}
+                            src={getImageUrl(imgSrc)}
                             alt={product.name}
                             className="w-10 h-10 object-cover rounded shadow-sm border"
                             onError={e => { e.target.style.display = 'none'; }}

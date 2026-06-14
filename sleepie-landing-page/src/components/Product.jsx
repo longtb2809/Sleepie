@@ -2,6 +2,7 @@ import { ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axiosInstance";
+import { getImageUrl } from "../utils/image";
 
 export default function Product() {
   const [products, setProducts] = useState([]);
@@ -52,7 +53,7 @@ export default function Product() {
               >
                 <Link to={`/product/${prod.id}`} className="block aspect-[4/3] overflow-hidden relative">
                   <img
-                    src={(prod.imageUrls && prod.imageUrls.length > 0) ? prod.imageUrls[0] : (prod.imageUrl || "/assets/product_1.png")}
+                    src={getImageUrl((prod.imageUrls && prod.imageUrls.length > 0) ? prod.imageUrls[0] : (prod.imageUrl || "/assets/product_1.png"))}
                     alt={prod.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
